@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FileFingerprint — Local Checksum &amp; Verification Tool</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">FP</span>
+      <div class="brand-text">
+        <h1>FileFingerprint</h1>
+        <p>Local checksum &amp; duplicate verification — runs entirely in this tab, nothing leaves your device</p>
+      </div>
+    </div>
+    <div class="status-pill" id="statusPill">
+      <span class="dot"></span>
+      <span id="statusText">Idle</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="scan" role="tab" aria-selected="true">01 Scan</button>
+    <button class="tab" data-tab="results" role="tab" aria-selected="false">02 Results</button>
+    <button class="tab" data-tab="compare" role="tab" aria-selected="false">03 Compare / Import</button>
+    <button class="tab" data-tab="about" role="tab" aria-selected="false">04 About Us</button>
+  </nav>
+
+  <main>
+
+    <!-- SCAN PANEL -->
+    <section class="panel active" id="panel-scan">
+
+      <div class="card">
+        <h2>Choose input</h2>
+        <p class="hint">Pick a folder to scan every file inside it (including subfolders), or pick individual files directly. Nothing is uploaded — files are read locally by your browser.</p>
+
+        <div class="input-row">
+          <label class="file-btn">
+            <input type="file" id="folderInput" webkitdirectory multiple hidden>
+            <span class="icon">⌂</span> Select folder
+          </label>
+
+          <label class="file-btn secondary">
+            <input type="file" id="filesInput" multiple hidden>
+            <span class="icon">＋</span> Select files
+          </label>
+
+          <button class="file-btn ghost" id="clearBtn" type="button">Clear queue</button>
+        </div>
+
+        <div class="queue-summary" id="queueSummary">No files selected yet.</div>
+      </div>
+
+      <div class="card">
+        <h2>Algorithms</h2>
+        <p class="hint">Exact-match checksums only. Pick one or more — each is computed independently per file.</p>
+        <div class="algo-grid">
+          <label class="algo-check"><input type="checkbox" name="algo" value="MD5" checked><span>MD5</span><small>fast, legacy compatibility</small></label>
+          <label class="algo-check"><input type="checkbox" name="algo" value="SHA-1" checked><span>SHA-1</span><small>common, native</small></label>
+          <label class="algo-check"><input type="checkbox" name="algo" value="SHA-256" checked><span>SHA-256</span><small>recommended default</small></label>
+          <label class="algo-check"><input type="checkbox" name="algo" value="SHA-512"><span>SHA-512</span><small>native, larger digest</small></label>
+        </div>
+      </div>
+
+      <div class="card actions-card">
+        <button class="primary-btn" id="startScanBtn" type="button">Generate fingerprints</button>
+        <div class="progress-wrap" id="progressWrap" hidden>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-label" id="progressLabel">0 / 0</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RESULTS PANEL -->
+    <section class="panel" id="panel-results">
+      <div class="card">
+        <div class="results-header">
+          <h2>Computed fingerprints</h2>
+          <div class="results-actions">
+            <button class="small-btn" id="exportTxtBtn" type="button">Export .txt</button>
+            <button class="small-btn" id="exportJsonBtn" type="button">Export .fpj (fingerprint file)</button>
+            <button class="small-btn" id="exportJsonPlainBtn" type="button">Export .json</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Path</th>
+                <th>Size</th>
+                <th class="hash-col">Hashes</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody">
+              <tr class="empty-row"><td colspan="4">No results yet — run a scan first.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARE PANEL -->
+    <section class="panel" id="panel-compare">
+      <div class="card">
+        <h2>Import a previous fingerprint file</h2>
+        <p class="hint">Import a fingerprint file generated earlier by this tool — <code>.fpj</code>, <code>.json</code>, or the plain <code>.txt</code> format — then compare it against a fresh scan (run Scan again on the same or a different location) to find exact matches, modified files, missing files, and new files.</p>
+        <label class="file-btn">
+          <input type="file" id="importInput" accept=".fpj,.json,.txt" hidden>
+          <span class="icon">⇪</span> Import fingerprint file
+        </label>
+        <span class="import-status" id="importStatus">No file imported.</span>
+      </div>
+
+      <div class="card actions-card">
+        <button class="primary-btn" id="compareBtn" type="button">Compare imported set with current results</button>
+      </div>
+
+      <div class="card">
+        <h2>Comparison report</h2>
+        <div class="table-wrap">
+          <table id="compareTable">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>File</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="compareBody">
+              <tr class="empty-row"><td colspan="3">Run a comparison to see results.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT PANEL -->
+    <section class="panel" id="panel-about">
+      <div class="card about-card">
+        <div class="about-header">
+          <span class="about-avatar">TH</span>
+          <div>
+            <h2 class="about-name">Tukaram Hankare</h2>
+            <p class="about-role">Farmer · Coder · Web Developer</p>
+          </div>
+        </div>
+        <p class="about-bio">
+          Built and maintained by Tukaram Hankare, based in Solapur, Maharashtra, India.
+          Work spans full-stack web development, Python desktop tooling, and offline-first
+          applications, including tools built specifically for Indian farming communities
+          alongside general developer productivity software.
+        </p>
+        <div class="about-links">
+          <a class="about-link" href="https://github.com/tukaramhankare/" target="_blank" rel="noopener">GitHub Profile ↗</a>
+          <a class="about-link" href="https://tukaramhankare.github.io/master-package/" target="_blank" rel="noopener">Project Showcase ↗</a>
+        </div>
+        <div class="about-footer-note">
+          FileFingerprint — built fully offline, no backend, no external API, no network calls.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>01 Scan</span><span class="sep">→</span><span>02 Generate</span><span class="sep">→</span><span>03 Export / Compare</span>
+    <span class="footer-note">No backend. No network calls. No API keys.</span>
+  </footer>
+
+</div>
+
+<script src="md5.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
