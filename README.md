@@ -52,3 +52,4 @@ Built and maintained by **Tukaram Hankare** — Farmer · Coder · Web Developer
 ## License
 
 Apache License 2.0
+Copyright 2026 Tukaram Hankare
